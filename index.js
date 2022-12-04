@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, Admin, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -30,10 +30,7 @@ async function run() {
     // Get all assets
     app.get("/assets", async (req, res) => {
       try {
-        const results = await cursor.assets
-          .find({})
-          .sort({ _id: -1 })
-          .toArray();
+        const results = await assets.find({}).sort({ _id: -1 }).toArray();
         if (results.length > 0) {
           res.send({
             success: true,
@@ -85,12 +82,37 @@ async function run() {
         if (result.acknowledged && result.insertedId) {
           res.send({
             success: true,
-            data: "Asset added successfully",
+            message: "Asset added successfully",
           });
         } else {
           res.send({
             success: false,
             error: "Asset not added",
+          });
+        }
+      } catch (error) {
+        res.send({
+          success: false,
+          error: error.message,
+        });
+      }
+    });
+
+    // Delete asset
+    app.delete("/assets/:id", async (req, res) => {
+      try {
+        const result = await assets.deleteOne({
+          _id: ObjectId(req.params.id),
+        });
+        if (result.acknowledged && result.deletedCount) {
+          res.send({
+            success: true,
+            message: "Asset deleted successfully",
+          });
+        } else {
+          res.send({
+            success: false,
+            error: "Asset not deleted",
           });
         }
       } catch (error) {
